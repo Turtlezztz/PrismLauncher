@@ -132,9 +132,19 @@ void ResSearchModel::setTargetFolder(const QString& v)
 
 void ResSearchModel::reconfigure()
 {
-    if (!m_complete) {
+    if (!m_complete || m_reconfigurePending) {
         return;
     }
+    // several properties usually change together (instanceId, resourceType...): apply once
+    m_reconfigurePending = true;
+    QTimer::singleShot(0, this, [this] {
+        m_reconfigurePending = false;
+        applyConfig();
+    });
+}
+
+void ResSearchModel::applyConfig()
+{
     m_instance = APPLICATION->instances()->getInstanceById(m_instanceId);
     ResFolderModel::ensureProfileLoaded(m_instance);
     m_ownedTarget.reset();
@@ -143,14 +153,8 @@ void ResSearchModel::reconfigure()
         m_ownedTarget = std::make_unique<DataPackFolderModel>(m_targetFolder, m_instance.data(), isIndexed, true);
         m_ownedTarget->update();
     }
-    // the dependency resolver and "installed" markers need the instance's lists loaded
-    if (m_instance) {
-        for (auto* model : m_instance->resourceLists()) {
-            if (model && model->empty()) {
-                model->update();
-            }
-        }
-    }
+    // The target list is loaded by the tab that opened the browser (ResFolderModel watches it). Kicking updates of
+    // the other lists here races with their own update tasks, so we don't.
     const auto provs = providers();
     if (!provs.contains(m_provider) && !provs.isEmpty()) {
         m_provider = provs.first();
@@ -332,6 +336,9 @@ void ResSearchModel::loadMcVersions()
     }
     m_mcVersionOptions = instanceMcVersion().isEmpty() ? QStringList() : QStringList{ instanceMcVersion() };
     emit mcVersionOptionsChanged();
+    if (m_mcVersionsJob && m_mcVersionsJob->isRunning()) {
+        return;  // the running load will call fill()
+    }
     m_mcVersionsJob = list->getLoadTask();
     if (m_mcVersionsJob) {
         connect(m_mcVersionsJob.get(), &Task::succeeded, this, fill);
@@ -358,6 +365,11 @@ void ResSearchModel::loadCategories()
         return;
     }
     auto [task, response] = api()->getModCategories();
+    if (m_categoriesJob && m_categoriesJob->isRunning()) {
+        // never drop a running job (its request would be destroyed mid-flight); let it finish in the background
+        m_categoriesJob->disconnect(this);
+        m_jobs << m_categoriesJob;
+    }
     m_categoriesJob = task;
     const auto* apiPtr = api();
     const QString prov = m_provider;
@@ -719,6 +731,10 @@ void ResSearchModel::runJob(const Task::Ptr& job)
 
 void ResSearchModel::search()
 {
+    if (m_reconfigurePending) {
+        QTimer::singleShot(0, this, &ResSearchModel::search);
+        return;
+    }
     if (!m_instance) {
         return;
     }
@@ -838,6 +854,10 @@ void ResSearchModel::fetchMoreResults()
 
 void ResSearchModel::openProject(const QString& provider, const QString& projectId)
 {
+    if (m_reconfigurePending) {
+        QTimer::singleShot(0, this, [this, provider, projectId] { openProject(provider, projectId); });
+        return;
+    }
     if (providers().contains(provider)) {
         m_provider = provider;
         emit providerChanged();

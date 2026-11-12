@@ -198,6 +198,7 @@ class ResSearchModel : public QAbstractListModel, public QQmlParserStatus {
     ResourceFolderModel* baseModel() const;
     ResourceFolderModel* targetModelFor(ModPlatform::ResourceType type) const;
     void reconfigure();
+    void applyConfig();
     void loadMcVersions();
     void loadCategories();
     void resetDefaultsFromInstance();
@@ -220,6 +221,7 @@ class ResSearchModel : public QAbstractListModel, public QQmlParserStatus {
     void emitRowChanged(const ModPlatform::IndexedPack* pack);
 
     bool m_complete = false;
+    bool m_reconfigurePending = false;
     QString m_instanceId;
     QString m_resourceType = "mod";
     QString m_targetFolder;
