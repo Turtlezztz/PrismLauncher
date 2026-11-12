@@ -1310,6 +1310,9 @@ if(APPLE)
     endif()
 endif()
 
+# Modern Qt Quick frontend (see ui/modern/README.md)
+add_subdirectory(ui/modern)
+
 add_executable(${Launcher_Name} MACOSX_BUNDLE WIN32 main.cpp ${LAUNCHER_RCS})
 target_link_options(${Launcher_Name} PRIVATE
     # /MANIFEST:NO disables generating a manifest file, we instead provide our own
@@ -1320,7 +1323,7 @@ if(${Launcher_USE_PCH})
     target_precompile_headers(${Launcher_Name} REUSE_FROM Launcher_logic)
 endif()
 
-target_link_libraries(${Launcher_Name} Launcher_logic)
+target_link_libraries(${Launcher_Name} Launcher_modern Launcher_modernplugin Launcher_logic)
 
 if(DEFINED Launcher_APP_BINARY_NAME)
     set_target_properties(${Launcher_Name} PROPERTIES OUTPUT_NAME "${Launcher_APP_BINARY_NAME}")

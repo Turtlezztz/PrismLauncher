@@ -41,6 +41,7 @@
  */
 
 #include "Application.h"
+#include "ModernFrontendInterface.h"
 #include "BuildConfig.h"
 
 #include "DataMigrationTask.h"
@@ -827,6 +828,13 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
         // Window state and geometry
         m_settings->registerSetting("MainWindowState", "");
+        // Modern frontend
+        m_settings->registerSetting("UseClassicUI", false);
+        m_settings->registerSetting("ModernTheme", QString("system"));    // system | dark | light
+        m_settings->registerSetting("ModernAccent", QString("#7c5cff"));
+        m_settings->registerSetting("ModernReduceMotion", false);
+        m_settings->registerSetting("ModernLibraryView", QString("grid"));  // grid | list
+        m_settings->registerSetting("ModernWindowGeometry", QString());
         m_settings->registerSetting("MainWindowGeometry", "");
 
         m_settings->registerSetting("ConsoleWindowState", "");
@@ -1298,6 +1306,24 @@ bool Application::createSetupWizard()
 
         m_themeManager->applyCurrentlySelectedTheme(true);
 
+        if (useModernUi()) {
+            // the modern frontend shows its own onboarding flow for these steps
+            m_pendingSetupSteps.clear();
+            if (languageRequired)
+                m_pendingSetupSteps << "language";
+            if (javaRequired)
+                m_pendingSetupSteps << "java";
+            else if (askjava)
+                m_pendingSetupSteps << "autojava";
+            if (pasteInterventionRequired)
+                m_pendingSetupSteps << "paste";
+            if (themeInterventionRequired)
+                m_pendingSetupSteps << "theme";
+            if (login)
+                m_pendingSetupSteps << "login";
+            return wizardRequired;
+        }
+
         SetupWizard setupWizard;
         if (languageRequired) {
             setupWizard.addPage(new LanguageWizardPage(&setupWizard));
@@ -1362,10 +1388,15 @@ bool Application::event(QEvent* event)
 #endif
 
     if (event->type() == QEvent::FileOpen) {
+        auto* ev = static_cast<QFileOpenEvent*>(event);
+        if (auto* modern = modernFrontend()) {
+            showMainWindow(false);
+            modern->processURLs({ ev->url() });
+            return QApplication::event(event);
+        }
         if (!m_mainWindow) {
             showMainWindow(false);
         }
-        auto* ev = static_cast<QFileOpenEvent*>(event);
         m_mainWindow->processURLs({ ev->url() });
     }
 
@@ -1414,7 +1445,7 @@ void Application::performMainStartupAction()
             return;
         }
     }
-    if (!m_mainWindow) {
+    if (!m_mainWindow && !(m_modernFrontend && m_modernFrontend->isMainVisible())) {
         // normal main window
         showMainWindow(false);
         qDebug() << "<> Main window shown.";
@@ -1441,7 +1472,11 @@ void Application::performMainStartupAction()
 
     if (!m_urlsToImport.isEmpty()) {
         qDebug() << "<> Importing from url:" << m_urlsToImport;
-        m_mainWindow->processURLs(m_urlsToImport);
+        if (auto* modern = modernFrontend()) {
+            modern->processURLs(m_urlsToImport);
+        } else {
+            m_mainWindow->processURLs(m_urlsToImport);
+        }
     }
 }
 
@@ -1487,6 +1522,11 @@ void Application::messageReceived(const QByteArray& message)
         QString url = received.args["url"];
         if (url.isEmpty()) {
             qWarning() << "Received" << command << "message without a zip path/URL.";
+            return;
+        }
+        if (auto* modern = modernFrontend()) {
+            showMainWindow(false);
+            modern->processURLs({ normalizeImportUrl(url) });
             return;
         }
         if (!m_mainWindow) {
@@ -1686,6 +1726,11 @@ void Application::controllerFinished()
 
 void Application::ShowGlobalSettings(class QWidget* parent, QString openPage)
 {
+    if (auto* modern = modernFrontend()) {
+        showMainWindow(false);
+        modern->showSettings(openPage);
+        return;
+    }
     if (!m_globalSettingsProvider) {
         return;
     }
@@ -1698,8 +1743,50 @@ void Application::ShowGlobalSettings(class QWidget* parent, QString openPage)
     }
 }
 
+static Application::ModernFrontendFactory s_modernFrontendFactory = nullptr;
+
+void Application::setModernFrontendFactory(ModernFrontendFactory factory)
+{
+    s_modernFrontendFactory = factory;
+}
+
+bool Application::useModernUi() const
+{
+    if (!s_modernFrontendFactory) {
+        return false;
+    }
+    if (qEnvironmentVariableIntValue("PRISM_CLASSIC_UI") == 1) {
+        return false;
+    }
+    return !(m_settings && m_settings->get("UseClassicUI").toBool());
+}
+
+ModernFrontendInterface* Application::modernFrontend()
+{
+    if (!m_modernFrontend && useModernUi()) {
+        m_modernFrontend = s_modernFrontendFactory(this);
+    }
+    return m_modernFrontend;
+}
+
+void Application::notifyModernMainClosed()
+{
+    if (m_modernWindowCounted) {
+        m_modernWindowCounted = false;
+        on_windowClose();
+    }
+}
+
 MainWindow* Application::showMainWindow(bool minimized)
 {
+    if (auto* modern = modernFrontend()) {
+        modern->showMain(minimized);
+        if (!m_modernWindowCounted) {
+            m_modernWindowCounted = true;
+            m_openWindows++;
+        }
+        return nullptr;
+    }
     if (m_mainWindow) {
         m_mainWindow->setWindowState(m_mainWindow->windowState() & ~Qt::WindowMinimized);
         m_mainWindow->raise();
@@ -1728,6 +1815,11 @@ MainWindow* Application::showMainWindow(bool minimized)
 
 ViewLogWindow* Application::showLogWindow()
 {
+    if (auto* modern = modernFrontend()) {
+        showMainWindow(false);
+        modern->showLauncherLog();
+        return nullptr;
+    }
     if (m_viewLogWindow) {
         m_viewLogWindow->setWindowState(m_viewLogWindow->windowState() & ~Qt::WindowMinimized);
         m_viewLogWindow->raise();
@@ -1746,6 +1838,11 @@ ViewLogWindow* Application::showLogWindow()
 InstanceWindow* Application::showInstanceWindow(MinecraftInstance* instance, const QString& page)
 {
     if (!instance) {
+        return nullptr;
+    }
+    if (auto* modern = modernFrontend()) {
+        showMainWindow(false);
+        modern->showInstance(instance, page);
         return nullptr;
     }
     auto id = instance->id();

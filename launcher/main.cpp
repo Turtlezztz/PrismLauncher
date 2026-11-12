@@ -37,6 +37,11 @@
 
 #include "Application.h"
 
+#include <QtQml/qqmlextensionplugin.h>
+#include "ModernFrontend.h"
+
+Q_IMPORT_QML_PLUGIN(PrismModernPlugin)
+
 #if defined Q_OS_WIN32
 #include "console/WindowsConsole.h"
 #endif
@@ -47,6 +52,9 @@ int main(int argc, char* argv[])
     // used on Windows to attach the standard IO streams
     console::WindowsConsoleGuard _consoleGuard;
 #endif
+
+    // the modern Qt Quick frontend (ui/modern) replaces the classic widget main window
+    Application::setModernFrontendFactory(&ModernFrontend::createFrontend);
 
     // initialize Qt
     Application app(argc, argv);

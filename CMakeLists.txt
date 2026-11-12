@@ -315,6 +315,10 @@ if(Launcher_QT_VERSION_MAJOR EQUAL 6)
             Test
             Widgets
             Xml
+            Qml
+            Quick
+            QuickControls2
+            Svg
         HINTS
             C:/Qt/*/*/lib/cmake
             /opt/qt/*/*/lib/cmake

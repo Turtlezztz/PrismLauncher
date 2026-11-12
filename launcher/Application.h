@@ -55,6 +55,7 @@ class LaunchController;
 class LocalPeer;
 class InstanceWindow;
 class MainWindow;
+class ModernFrontendInterface;
 class ViewLogWindow;
 class GenericPageProvider;
 class QFile;
@@ -192,6 +193,19 @@ class Application : public QApplication {
 
     void ShowGlobalSettings(class QWidget* parent, QString openPage = QString());
 
+    // --- Modern (Qt Quick) frontend ---
+    using ModernFrontendFactory = ModernFrontendInterface* (*)(Application*);
+    static void setModernFrontendFactory(ModernFrontendFactory factory);
+    /// true unless the user opted into the classic widget UI (setting "UseClassicUI" or env PRISM_CLASSIC_UI=1)
+    bool useModernUi() const;
+    /// The modern frontend, created lazily. nullptr when the classic UI is in use.
+    ModernFrontendInterface* modernFrontend();
+    /// Called by the modern frontend when its main window was closed by the user.
+    void notifyModernMainClosed();
+    /// Setup steps the modern frontend must show on first start ("language", "java", "autojava", "paste", "theme", "login")
+    QStringList pendingSetupSteps() const { return m_pendingSetupSteps; }
+    void clearPendingSetupSteps() { m_pendingSetupSteps.clear(); }
+
     bool updaterEnabled();
     static QString updaterBinaryName();
 
@@ -280,6 +294,11 @@ class Application : public QApplication {
 
     // log window, if any
     ViewLogWindow* m_viewLogWindow = nullptr;
+
+    // modern frontend, if any
+    ModernFrontendInterface* m_modernFrontend = nullptr;
+    bool m_modernWindowCounted = false;
+    QStringList m_pendingSetupSteps;
 
     // peer launcher instance connector - used to implement single instance launcher and signalling
     LocalPeer* m_peerInstance = nullptr;
