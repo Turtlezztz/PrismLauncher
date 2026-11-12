@@ -1,5 +1,6 @@
 #include "InstVersionListModel.h"
 
+#include <QLocale>
 #include <QSet>
 
 #include "Application.h"
@@ -41,6 +42,14 @@ void InstVersionListModel::setUid(const QString& uid)
         m_list = nullptr;
     }
     setSourceModel(m_list.data());
+    if (m_list && uid != "java") {
+        // newest first (the metadata list isn't kept sorted when entries get merged in)
+        setSortRole(BaseVersionList::SortRole);
+        setDynamicSortFilter(true);
+        sort(0, Qt::DescendingOrder);
+    } else {
+        sort(-1);
+    }
     emit uidChanged();
     emit countChanged();
 }
@@ -197,8 +206,14 @@ QVariant InstVersionListModel::data(const QModelIndex& index, int role) const
             return get(BaseVersionList::LatestRole).toBool();
         case ParentRole:
             return get(BaseVersionList::ParentVersionRole);
-        case TimeRole:
-            return get(Meta::VersionList::TimeRole);
+        case TimeRole: {
+            const auto t = get(Meta::VersionList::TimeRole);
+            if (t.typeId() == QMetaType::QDateTime) {
+                const auto dt = t.toDateTime();
+                return dt.isValid() ? QLocale(QLocale::English).toString(dt.date(), "d MMM yyyy") : QString();
+            }
+            return t.toString();
+        }
         case CurrentRole:
             return !m_current.isEmpty() && get(BaseVersionList::VersionIdRole).toString() == m_current;
         case PathRole:

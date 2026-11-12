@@ -30,6 +30,15 @@ Item {
         }
     }
 
+    // keep the current tab scrolled into view when the tab bar overflows
+    onCurrentTabChanged: Qt.callLater(function() {
+        if (tabFlick.contentWidth <= tabFlick.width) return
+        var i = 0
+        for (; i < tabs.length; i++) if (tabs[i].key === currentTab) break
+        var approx = tabBar.implicitWidth * (i + 0.5) / tabs.length
+        tabFlick.contentX = Math.max(0, Math.min(tabFlick.contentWidth - tabFlick.width, approx - tabFlick.width / 2))
+    })
+
     InstanceBridge { id: bridge; instanceId: page.instanceId }
     ManagedPackBridge { id: packInfo; instanceId: page.instanceId }
 
@@ -41,6 +50,7 @@ Item {
         }
         Router.section = "Library"
         openTab(initialTab.length ? initialTab : (bridge.running || bridge.launching || bridge.hasLog ? "console" : "version"))
+        if (bridge.environment("PRISM_MODERN_DIALOG") === "launch") Qt.callLater(function() { bridge.launch(bridge.environment("PRISM_MODERN_LAUNCH_MODE") || "normal") })
     }
 
     // the instance was deleted (or replaced by a modpack update)

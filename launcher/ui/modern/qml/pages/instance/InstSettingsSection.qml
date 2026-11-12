@@ -38,7 +38,7 @@ Rectangle {
             spacing: Theme.spacing
             Rectangle {
                 visible: section.iconName.length > 0
-                width: 32; height: 32; radius: 9
+                Layout.preferredWidth: 32; Layout.preferredHeight: 32; radius: 9
                 color: section.on ? Theme.accentSoft : Theme.surfaceAlt
                 Behavior on color { ColorAnimation { duration: Theme.dur } }
                 Icon { anchors.centerIn: parent; name: section.iconName; size: 16; color: section.on ? Theme.accent : Theme.textMuted }

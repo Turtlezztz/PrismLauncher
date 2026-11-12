@@ -16,7 +16,7 @@ ColumnLayout {
     spacing: Theme.spacing
 
     readonly property var typeNames: ({ release: qsTr("Releases"), snapshot: qsTr("Snapshots"), old_beta: qsTr("Betas"),
-                                        old_alpha: qsTr("Alphas"), experiment: qsTr("Experiments") })
+                                        old_alpha: qsTr("Alphas"), experiment: qsTr("Experiments"), old_snapshot: qsTr("Old snapshots") })
 
     function select(row) {
         if (!versions || row < 0 || row >= list.count) { selected = null; list.currentIndex = -1; return }
@@ -103,7 +103,6 @@ ColumnLayout {
             currentIndex: -1
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: PScrollBar {}
-            reuseItems: true
             highlightMoveDuration: 0
             delegate: Rectangle {
                 id: row
@@ -149,7 +148,7 @@ ColumnLayout {
                     Text { visible: root.javaMode && !!row.arch; text: row.arch || ""; color: Theme.textMuted; font.pixelSize: Theme.fontSm }
                     Text {
                         visible: !root.javaMode && !!row.time && String(row.time).length > 0
-                        text: row.time ? String(row.time).substring(0, 10) : ""
+                        text: row.time ? String(row.time) : ""
                         color: Theme.textSubtle; font.pixelSize: Theme.fontSm
                     }
                 }

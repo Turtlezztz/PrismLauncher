@@ -53,6 +53,14 @@ Item {
     }
     function addEmpty() { emptyDialog.open() }
 
+    // debug: PRISM_MODERN_DIALOG=loader|minecraft|empty opens a dialog right away (for screenshots)
+    Component.onCompleted: {
+        var d = bridge ? bridge.environment("PRISM_MODERN_DIALOG") : ""
+        if (d === "loader") loaderDialog.openFor(components, bridge.minecraftVersion, "net.fabricmc.fabric-loader")
+        else if (d === "minecraft") Qt.callLater(function() { changeVersion(components.get("net.minecraft")) })
+        else if (d === "empty") addEmpty()
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.spacing

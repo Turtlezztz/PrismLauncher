@@ -43,7 +43,7 @@ Item {
                 anchors.fill: parent; anchors.margins: Theme.spacingLg
                 spacing: Theme.spacingLg
                 Rectangle {
-                    width: 48; height: 48; radius: 14
+                    Layout.preferredWidth: 48; Layout.preferredHeight: 48; radius: 14
                     color: Theme.accentSoft
                     Icon { anchors.centerIn: parent; name: "package"; size: 24; color: Theme.accent }
                 }
