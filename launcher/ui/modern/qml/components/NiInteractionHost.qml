@@ -7,7 +7,6 @@ import PrismModern
 Item {
     id: host
 
-    Timer { interval: 300; running: true; onTriggered: { var s = String(App.setting("ModernNewInstanceSource")); if (s === "dlg:q") { question.req = { title: "Easy There!", text: "The modpack you are installing includes mods which are not hosted on Modrinth or CurseForge.<br><br><b>Malicious mods are often distributed through links.</b>", kind: "warning", items: ["mods/foo.jar", "mods/bar-1.2.jar"], buttons: ["Install anyway", "Cancel"], cancelIndex: 1, confirmCheck: "I trust this modpack and wish to proceed regardless" }; question.open() } else if (s === "dlg:c") { checklist.req = { title: "Select optional mods", text: "This modpack has optional mods.", items: ["mods/a.jar", "mods/b.jar", "resourcepacks/c.zip"], checked: ["mods/a.jar"] }; checklist.open() } else if (s === "dlg:url") Router.go("NewInstance", { importUrls: ["modrinth://modpack/fabulously-optimized"] }); else if (s.startsWith("dlg:")) InstanceActions.open(s.substr(4), "Vanilla 1.21") } } // TMPDLG
     Connections {
         target: NiInteraction
         function onRequested(id, kind, data) {
