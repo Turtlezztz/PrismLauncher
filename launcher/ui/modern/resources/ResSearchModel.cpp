@@ -9,6 +9,7 @@
 #include "InstanceList.h"
 #include "Json.h"
 #include "Markdown.h"
+#include "ResFolderModel.h"
 #include "ResImages.h"
 #include "ResTask.h"
 #include "ResourceDownloadTask.h"
@@ -135,6 +136,7 @@ void ResSearchModel::reconfigure()
         return;
     }
     m_instance = APPLICATION->instances()->getInstanceById(m_instanceId);
+    ResFolderModel::ensureProfileLoaded(m_instance);
     m_ownedTarget.reset();
     if (m_instance && !m_targetFolder.isEmpty()) {
         bool isIndexed = !APPLICATION->settings()->get("ModMetadataDisabled").toBool();

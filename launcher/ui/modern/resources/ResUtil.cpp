@@ -7,6 +7,7 @@
 #include "Application.h"
 #include "DesktopServices.h"
 #include "InstanceList.h"
+#include "ResFolderModel.h"
 #include "ResImages.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
@@ -46,6 +47,7 @@ QStringList ResUtil::modFolders(const QString& instanceId) const
     if (!inst) {
         return out;
     }
+    ResFolderModel::ensureProfileLoaded(inst);
     // classic CoreModFolderPage::shouldDisplay
     auto* profile = inst->getPackProfile();
     if (profile && profile->getComponent("net.minecraftforge") && profile->getComponent("net.minecraft")) {

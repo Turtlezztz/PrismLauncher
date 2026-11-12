@@ -37,6 +37,14 @@ qt_add_qml_module(Launcher_modern
 )
 
 target_include_directories(Launcher_modern PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# The generated QML type registration includes bridge headers by bare file name, so per-feature
+# subfolders (resources/, instance/, ...) must be on the include path too.
+file(GLOB MODERN_SUBDIRS LIST_DIRECTORIES true ${CMAKE_CURRENT_SOURCE_DIR}/*)
+foreach(dir ${MODERN_SUBDIRS})
+    if(IS_DIRECTORY ${dir} AND NOT dir MATCHES "/qml$")
+        target_include_directories(Launcher_modern PRIVATE ${dir})
+    endif()
+endforeach()
 target_link_libraries(Launcher_modern PUBLIC
     Launcher_logic
     Qt6::Qml

@@ -10,7 +10,7 @@
 #include <QTimer>
 
 class MinecraftInstance;
-class ResTaskHandle;
+#include "ResTask.h"
 
 /**
  * QML model for an instance's screenshots folder. Thumbnails are served by image://resthumb (decoded off the UI thread, cached).

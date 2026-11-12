@@ -12,7 +12,7 @@
 
 class MinecraftInstance;
 class ResourceFolderModel;
-class ResTaskHandle;
+#include "ResTask.h"
 
 /**
  * Search + selection model behind the modern resource download browser (classic ResourceDownloadDialog / ResourcePage /

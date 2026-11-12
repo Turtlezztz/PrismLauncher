@@ -130,6 +130,11 @@ QPixmap ResIconProvider::requestPixmap(const QString& id, QSize* size, const QSi
     if (it != sources().constEnd() && *it) {
         pm = (*it)(rest, requestedSize.isValid() && !requestedSize.isEmpty() ? requestedSize : QSize(64, 64));
     }
+    if (pm.isNull()) {
+        // "no image" is a normal answer; hand QML a 1x1 transparent pixmap instead of an error
+        pm = QPixmap(1, 1);
+        pm.fill(Qt::transparent);
+    }
     if (size) {
         *size = pm.size();
     }

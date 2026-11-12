@@ -149,8 +149,8 @@ void ResFolderModel::rebind()
     m_anchorId.clear();
     m_currentId.clear();
 
-    auto inst = APPLICATION->instances()->getInstanceById(m_instanceId);
-    m_instance = inst;
+    m_instance = APPLICATION->instances()->getInstanceById(m_instanceId);
+    ensureProfileLoaded(m_instance);
     if (m_instance) {
         ResourceFolderModel* src = nullptr;
         if (m_kind == "mods") {
@@ -216,6 +216,28 @@ void ResFolderModel::rebind()
     emit countsChanged();
     emit selectionChanged();
     emit instanceRunningChanged();
+}
+
+void ResFolderModel::ensureProfileLoaded(MinecraftInstance* inst)
+{
+    if (!inst) {
+        return;
+    }
+    auto* profile = inst->getPackProfile();
+    // only try once per profile, and never while a profile task is already running (it would be restarted)
+    static QSet<PackProfile*> attempted;
+    if (!profile || attempted.contains(profile)) {
+        return;
+    }
+    if (auto t = profile->getCurrentTask(); t && t->isRunning()) {
+        return;
+    }
+    if (profile->getComponentVersion("net.minecraft").isEmpty()) {
+        attempted.insert(profile);
+        if (auto res = profile->reload(Net::Mode::Offline); !res) {
+            qWarning() << "Failed to reload components:" << res.error();
+        }
+    }
 }
 
 bool ResFolderModel::isMods() const
@@ -381,7 +403,7 @@ QHash<int, QByteArray> ResFolderModel::roleNames() const
         { VersionRole, "version" },         { AuthorRole, "author" },
         { ProviderRole, "provider" },       { DescriptionRole, "description" },
         { FileNameRole, "fileName" },       { SizeTextRole, "sizeText" },
-        { DateTextRole, "dateText" },       { EnabledRole, "enabled" },
+        { DateTextRole, "dateText" },       { EnabledRole, "isEnabled" },
         { SelectedRole, "selected" },       { IconSourceRole, "iconSource" },
         { HasMetadataRole, "hasMetadata" }, { UpdateLockedRole, "updateLocked" },
         { IssuesRole, "issues" },           { HomepageRole, "homepage" },
@@ -453,7 +475,7 @@ QVariant ResFolderModel::data(const QModelIndex& idx, int role) const
             return m_selected.contains(r->internalId());
         case IconSourceRole: {
             const bool hasImage = isMods() || resourceType() != "shaderpack";
-            if (!hasImage) {
+            if (!hasImage || (mod && r->isResolved() && mod->iconPath().isEmpty())) {
                 return QString();
             }
             return QString("image://resicon/%1/%2?v=%3")
@@ -802,7 +824,7 @@ QVariantMap ResFolderModel::details(int row) const
     m["fileName"] = r->fileinfo().fileName();
     m["path"] = r->fileinfo().absoluteFilePath();
     m["size"] = r->sizeStr();
-    m["date"] = QLocale().toString(r->dateTimeChanged(), QLocale::LongFormat);
+    m["date"] = QLocale().toString(r->dateTimeChanged(), QLocale::ShortFormat);
     m["enabled"] = r->enabled();
     m["provider"] = r->provider() == "Unknown" ? QString() : r->provider();
     m["hasMetadata"] = r->metadata() != nullptr;
@@ -826,7 +848,7 @@ QVariantMap ResFolderModel::details(int row) const
         m["side"] = mod->side();
         m["loaders"] = mod->loaders();
         m["mcVersions"] = mod->mcVersionsString();
-        m["releaseType"] = mod->releaseType();
+        m["releaseType"] = mod->releaseType() == "Unknown" ? QString() : mod->releaseType();
         m["issueTracker"] = mod->issueTracker();
         QStringList lic;
         for (const auto& l : mod->licenses()) {

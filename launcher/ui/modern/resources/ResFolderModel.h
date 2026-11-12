@@ -10,7 +10,7 @@
 class MinecraftInstance;
 class ResourceFolderModel;
 class Resource;
-class ResTaskHandle;
+#include "ResTask.h"
 
 /**
  * QML view over one of an instance's external-resource folders (mods, resource packs, shader packs...),
@@ -111,6 +111,9 @@ class ResFolderModel : public QSortFilterProxyModel, public QQmlParserStatus {
     bool loading() const { return m_loading; }
     bool metadataDisabled() const;
     bool dependenciesDisabled() const;
+
+    /// Make sure the instance's components are loaded (needed for loader / game version checks).
+    static void ensureProfileLoaded(MinecraftInstance* inst);
 
     ResourceFolderModel* source() const { return m_src; }
     MinecraftInstance* instance() const { return m_instance; }

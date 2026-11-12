@@ -1,5 +1,8 @@
 #include "ModernFrontend.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -144,7 +147,9 @@ void ModernFrontend::finishSetup()
 
 void ModernFrontend::debugQuit()
 {
-    QCoreApplication::exit(0);
+    // Debug screenshots only: exit immediately without running teardown (avoids shutdown crashes / crash reports).
+    std::fflush(nullptr);
+    std::_Exit(0);
 }
 
 bool ModernFrontend::grabWindowTo(const QString& path)

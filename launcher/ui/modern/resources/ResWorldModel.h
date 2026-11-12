@@ -9,7 +9,7 @@
 class MinecraftInstance;
 class WorldList;
 class World;
-class ResTaskHandle;
+#include "ResTask.h"
 
 /**
  * QML model for an instance's singleplayer worlds (classic WorldListPage over WorldList).

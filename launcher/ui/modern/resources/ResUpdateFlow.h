@@ -10,8 +10,8 @@
 #include "modplatform/CheckUpdateTask.h"
 #include "modplatform/ModIndex.h"
 
-class ResFolderModel;
-class ResTaskHandle;
+#include "ResFolderModel.h"
+#include "ResTask.h"
 class Resource;
 class ResourceFolderModel;
 class MinecraftInstance;
