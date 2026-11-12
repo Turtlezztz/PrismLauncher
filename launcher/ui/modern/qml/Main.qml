@@ -13,6 +13,12 @@ ApplicationWindow {
     visible: false
     title: App.appName
     color: Theme.bg
+
+    // macOS: content extends under a transparent title bar (traffic lights float over the sidebar)
+    readonly property bool macChrome: Qt.platform.os === "osx"
+    flags: macChrome ? (Qt.Window | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint) : Qt.Window
+    readonly property int titleBarHeight: macChrome ? Math.max(28, Math.round(safeProbe.topInset)) : 0
+    Item { id: safeProbe; anchors.fill: parent; readonly property real topInset: SafeArea.margins.top }
     font.family: Theme.fontFamily
     font.pixelSize: Theme.fontMd
 
@@ -105,6 +111,7 @@ ApplicationWindow {
         Sidebar {
             id: sidebar
             Layout.fillHeight: true
+            topInset: window.titleBarHeight
         }
 
         Rectangle { Layout.fillHeight: true; width: 1; color: Theme.border }
@@ -113,6 +120,7 @@ ApplicationWindow {
             id: stack
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.topMargin: window.macChrome ? window.titleBarHeight - 10 : 0
             clip: true
             initialItem: Router.pageUrl("Library")
 
@@ -139,6 +147,17 @@ ApplicationWindow {
             }
             replaceExit: Transition { NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.durFast } }
         }
+    }
+
+    // macOS: the (now invisible) title bar strip still moves the window and zooms on double-click
+    MouseArea {
+        visible: window.macChrome
+        anchors { left: parent.left; right: parent.right; top: parent.top }
+        height: window.titleBarHeight
+        z: 900
+        acceptedButtons: Qt.LeftButton
+        onPressed: window.startSystemMove()
+        onDoubleClicked: window.visibility === Window.Maximized ? window.showNormal() : window.showMaximized()
     }
 
     DialogHost { anchors.fill: parent }

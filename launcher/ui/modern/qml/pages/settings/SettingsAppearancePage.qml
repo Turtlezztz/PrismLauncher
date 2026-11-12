@@ -215,7 +215,7 @@ SetPageBase {
     // ---------------------------------------------------------------- cat
     SetSection {
         title: qsTr("Background cat"); iconName: "image"
-        description: qsTr("Shown in the classic main window background.")
+        description: qsTr("A cat in the corner of your library, like the classic client. Toggle it with the cat button in the library header.")
         SetRow {
             label: qsTr("Enable the cat"); keywords: "cat background kitteh"
             PSwitch {

@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QUrl>
 #include <QVariant>
 
 #include "InstanceModel.h"
@@ -26,6 +27,12 @@ class AppController : public QObject {
     Q_PROPERTY(QString theme READ theme WRITE setTheme NOTIFY themeChanged)            // system | dark | light
     Q_PROPERTY(QString accent READ accent WRITE setAccent NOTIFY accentChanged)        // #rrggbb
     Q_PROPERTY(bool reduceMotion READ reduceMotion WRITE setReduceMotion NOTIFY reduceMotionChanged)
+    // --- the background cat (same settings as the classic main window) ---
+    Q_PROPERTY(bool catEnabled READ catEnabled NOTIFY catChanged)                          // "EnableCat"
+    Q_PROPERTY(bool catVisible READ catVisible WRITE setCatVisible NOTIFY catChanged)     // "TheCat"
+    Q_PROPERTY(QUrl catSource READ catSource NOTIFY catChanged)                           // current cat pack image (seasonal aware)
+    Q_PROPERTY(qreal catOpacity READ catOpacity NOTIFY catChanged)                        // 0..1 ("CatOpacity")
+    Q_PROPERTY(QString catFit READ catFit NOTIFY catChanged)                              // fit | fill | stretch ("CatFit")
 
    public:
     explicit AppController(QObject* parent = nullptr);
@@ -46,6 +53,13 @@ class AppController : public QObject {
     void setAccent(const QString& accent);
     bool reduceMotion() const;
     void setReduceMotion(bool on);
+
+    bool catEnabled() const;
+    bool catVisible() const;
+    void setCatVisible(bool visible);
+    QUrl catSource() const;
+    qreal catOpacity() const;
+    QString catFit() const;
 
     // --- instance actions ---
     Q_INVOKABLE bool launch(const QString& instanceId, bool offline = false, const QString& profileName = QString());
@@ -89,6 +103,7 @@ class AppController : public QObject {
     void themeChanged();
     void accentChanged();
     void reduceMotionChanged();
+    void catChanged();
     void settingChanged(const QString& key, const QVariant& value);
     void toast(const QString& message, const QString& kind);
 

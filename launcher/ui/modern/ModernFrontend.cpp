@@ -11,6 +11,7 @@
 
 #include "Application.h"
 #include "ImageProviders.h"
+#include "MacWindowStyle.h"
 #include "instance/ModernLaunchHandler.h"
 #include "minecraft/MinecraftInstance.h"
 #include "settings/SettingsObject.h"
@@ -61,6 +62,7 @@ void ModernFrontend::ensureEngine()
     if (!roots.isEmpty()) {
         m_window = qobject_cast<QQuickWindow*>(roots.first());
     }
+    MacWindowStyle::integrateTitleBar(m_window);
     // launch dialogs (account choice, offline name, ...) are shown in QML from now on
     ModernLaunchHandler::install(m_engine, m_window);
 }

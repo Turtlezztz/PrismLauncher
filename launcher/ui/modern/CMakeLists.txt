@@ -26,6 +26,12 @@ file(GLOB_RECURSE MODERN_ASSETS CONFIGURE_DEPENDS
 
 set_source_files_properties(${MODERN_SINGLETONS} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
+# Objective-C++ (macOS window integration)
+if(APPLE)
+    file(GLOB_RECURSE MODERN_OBJCXX CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.mm)
+    list(APPEND MODERN_CPP ${MODERN_OBJCXX})
+endif()
+
 qt_add_library(Launcher_modern STATIC)
 qt_add_qml_module(Launcher_modern
     URI PrismModern
@@ -55,3 +61,6 @@ target_link_libraries(Launcher_modern PUBLIC
     Qt6::QuickControls2
     Qt6::Svg
 )
+if(APPLE)
+    target_link_libraries(Launcher_modern PUBLIC "-framework AppKit")
+endif()

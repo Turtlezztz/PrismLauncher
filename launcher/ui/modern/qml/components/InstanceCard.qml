@@ -30,7 +30,9 @@ Item {
         anchors.fill: parent
         anchors.margins: 6
         radius: Theme.radiusLg
-        color: card.hovered ? Theme.surfaceHover : Theme.surface
+        // slightly see-through while the background cat is shown, so it peeks through like in the classic view
+        readonly property color _base: card.hovered ? Theme.surfaceHover : Theme.surface
+        color: App.catVisible ? Qt.rgba(_base.r, _base.g, _base.b, 0.82) : _base
         border.width: card.selected ? 2 : 1
         border.color: card.selected ? Theme.accent : card.hovered ? Theme.borderStrong : Theme.border
         Behavior on color { ColorAnimation { duration: Theme.durFast } }

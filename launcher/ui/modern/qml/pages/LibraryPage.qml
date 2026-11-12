@@ -25,6 +25,14 @@ PageScaffold {
             Component.onCompleted: currentIndex = App.instances.sortMode === "lastPlayed" ? 1 : 0
             onActivated: App.instances.sortMode = currentValue
         },
+        IconButton {
+            visible: App.catEnabled
+            iconName: "cat"
+            size: 32
+            active: App.catVisible
+            tip: App.catVisible ? qsTr("Hide the cat") : qsTr("Show the cat")
+            onClicked: App.catVisible = !App.catVisible
+        },
         SegmentedControl {
             options: [ { value: "grid", icon: "grid-2x2" }, { value: "list", icon: "list" } ]
             value: page.view
@@ -86,6 +94,13 @@ PageScaffold {
     Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
+
+        // the classic background cat, behind everything (extends to the window edges)
+        CatBackground {
+            anchors.fill: parent
+            anchors.rightMargin: -page.contentMargins
+            z: -1
+        }
 
         EmptyState {
             anchors.centerIn: parent
@@ -156,7 +171,7 @@ PageScaffold {
                 width: list.width
                 height: 56
                 radius: Theme.radius
-                color: rowHover.hovered ? Theme.surfaceHover : "transparent"
+                color: rowHover.hovered ? (App.catVisible ? Qt.rgba(Theme.surfaceHover.r, Theme.surfaceHover.g, Theme.surfaceHover.b, 0.85) : Theme.surfaceHover) : "transparent"
                 Behavior on color { ColorAnimation { duration: Theme.durFast } }
                 HoverHandler { id: rowHover }
                 TapHandler { onTapped: Router.push("Instance", { instanceId: rowItem.instanceId }); onDoubleTapped: App.launch(rowItem.instanceId) }

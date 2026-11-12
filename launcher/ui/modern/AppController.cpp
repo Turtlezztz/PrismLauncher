@@ -38,9 +38,12 @@ AppController::AppController(QObject* parent) : QObject(parent)
             emit accentChanged();
         } else if (id == "ModernReduceMotion") {
             emit reduceMotionChanged();
+        } else if (id == "EnableCat" || id == "TheCat" || id == "BackgroundCat" || id == "CatOpacity" || id == "CatFit") {
+            emit catChanged();
         }
     });
     connect(APPLICATION, &Application::updateAllowedChanged, this, &AppController::runningCountChanged);
+    connect(APPLICATION, &Application::currentCatChanged, this, [this] { emit catChanged(); });
 }
 
 AppController* AppController::create(QQmlEngine*, QJSEngine*)
@@ -126,6 +129,44 @@ bool AppController::reduceMotion() const
 void AppController::setReduceMotion(bool on)
 {
     APPLICATION->settings()->set("ModernReduceMotion", on);
+}
+
+bool AppController::catEnabled() const
+{
+    return APPLICATION->settings()->get("EnableCat").toBool();
+}
+
+bool AppController::catVisible() const
+{
+    return catEnabled() && APPLICATION->settings()->get("TheCat").toBool();
+}
+
+void AppController::setCatVisible(bool visible)
+{
+    APPLICATION->settings()->set("TheCat", visible && catEnabled());
+}
+
+QUrl AppController::catSource() const
+{
+    const QString path = APPLICATION->themeManager()->getCatPack();
+    if (path.isEmpty()) {
+        return {};
+    }
+    if (path.startsWith(":")) {
+        return QUrl("qrc" + path);
+    }
+    return QUrl::fromLocalFile(path);
+}
+
+qreal AppController::catOpacity() const
+{
+    return qBound(0, APPLICATION->settings()->get("CatOpacity").toInt(), 100) / 100.0;
+}
+
+QString AppController::catFit() const
+{
+    const auto fit = APPLICATION->settings()->get("CatFit").toString();
+    return (fit == "fit" || fit == "fill") ? fit : QStringLiteral("stretch");
 }
 
 MinecraftInstance* AppController::find(const QString& id) const

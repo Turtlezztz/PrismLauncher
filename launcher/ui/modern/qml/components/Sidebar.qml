@@ -6,6 +6,7 @@ import PrismModern
 Rectangle {
     id: root
     property bool collapsed: width < 120
+    property int topInset: 0   // height of the integrated macOS title bar (traffic lights)
     implicitWidth: App.setting("ModernSidebarCollapsed") === true ? 68 : 224
     color: Theme.sidebar
     Behavior on implicitWidth { NumberAnimation { duration: Theme.dur; easing.type: Theme.easing } }
@@ -13,7 +14,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
-        anchors.topMargin: App.platform === "macos" ? 16 : 12
+        anchors.topMargin: root.topInset > 0 ? root.topInset + 10 : 12
         spacing: 4
 
         // brand
