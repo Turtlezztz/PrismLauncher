@@ -834,6 +834,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("ModernAccent", QString("#7c5cff"));
         m_settings->registerSetting("ModernReduceMotion", false);
         m_settings->registerSetting("ModernLibraryView", QString("grid"));  // grid | list
+        m_settings->registerSetting("ModernNewInstanceSource", QString("vanilla"));  // last used source on the New instance page
         m_settings->registerSetting("ModernWindowGeometry", QString());
         m_settings->registerSetting("MainWindowGeometry", "");
 

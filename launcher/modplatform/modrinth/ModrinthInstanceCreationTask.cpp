@@ -21,6 +21,7 @@
 #include "modplatform/ModIndex.h"
 #include "settings/INISettingsObject.h"
 
+#include "ModernInteraction.h"
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui/dialogs/UntrustedModsDialog.h"
 #include "ui/pages/modplatform/OptionalModDialog.h"
@@ -144,14 +145,21 @@ void ModrinthCreationTask::executeTask()
         }
     } else {
         // We don't have an old index file, so we may duplicate stuff!
-        auto* dialog = CustomMessageBox::selectable(m_parent, tr("No index file."),
-                                                    tr("We couldn't find a suitable index file for the older version. This may cause some "
-                                                       "of the files to be duplicated. Do you want to continue?"),
-                                                    QMessageBox::Warning, QMessageBox::Ok | QMessageBox::Cancel);
+        const auto title = tr("No index file.");
+        const auto text = tr("We couldn't find a suitable index file for the older version. This may cause some "
+                             "of the files to be duplicated. Do you want to continue?");
+        if (ModernInteraction::active()) {
+            if (!ModernInteraction::confirm(title, text, "warning", tr("Continue"), tr("Cancel"))) {
+                emitAborted();
+                return;
+            }
+        } else {
+            auto* dialog = CustomMessageBox::selectable(m_parent, title, text, QMessageBox::Warning, QMessageBox::Ok | QMessageBox::Cancel);
 
-        if (dialog->exec() == QDialog::DialogCode::Rejected) {
-            emitAborted();
-            return;
+            if (dialog->exec() == QDialog::DialogCode::Rejected) {
+                emitAborted();
+                return;
+            }
         }
     }
 
@@ -415,13 +423,23 @@ bool ModrinthCreationTask::parseManifest(const QString& indexPath, std::vector<F
             for (const auto& file : optionalFiles) {
                 oFiles.push_back(file.path);
             }
-            OptionalModDialog optionalModDialog(m_parent, oFiles);
-            if (optionalModDialog.exec() == QDialog::Rejected) {
-                emitAborted();
-                return false;
+            QStringList selectedMods;
+            if (ModernInteraction::active()) {
+                auto selected = ModernInteraction::checklist(tr("Select optional mods"),
+                                                             tr("This modpack has optional mods. Choose which ones to install."), oFiles, {});
+                if (!selected) {
+                    emitAborted();
+                    return false;
+                }
+                selectedMods = *selected;
+            } else {
+                OptionalModDialog optionalModDialog(m_parent, oFiles);
+                if (optionalModDialog.exec() == QDialog::Rejected) {
+                    emitAborted();
+                    return false;
+                }
+                selectedMods = optionalModDialog.getResult();
             }
-
-            auto selectedMods = optionalModDialog.getResult();
             for (auto file : optionalFiles) {
                 if (selectedMods.contains(file.path)) {
                     file.required = true;
@@ -490,6 +508,9 @@ bool ModrinthCreationTask::promptForUntrustedMods()
         return true;
     }
 
+    if (ModernInteraction::active()) {
+        return ModernInteraction::ask(ModernInteraction::untrustedModsQuestion(untrustedMods)) == 0;
+    }
     UntrustedModsDialog dialog{ untrustedMods, m_parent };
     return dialog.exec() == QDialog::Accepted;
 }

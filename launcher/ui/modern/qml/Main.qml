@@ -143,6 +143,7 @@ ApplicationWindow {
 
     DialogHost { anchors.fill: parent }
     InstanceDialogHost { anchors.fill: parent }
+    NiInteractionHost { anchors.fill: parent }   // import/install questions + background task progress
     ToastHost {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
