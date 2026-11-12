@@ -20,6 +20,9 @@
 #define LAUNCHER_EXTERNALUPDATER_H
 
 #include <QObject>
+#include <QString>
+
+#include <functional>
 
 /*!
  * A base class for an updater that uses an external library.
@@ -69,6 +72,14 @@ class ExternalUpdater : public QObject {
      * Set whether or not beta updates should be checked for in addition to regular releases.
      */
     virtual void setBetaAllowed(bool allowed) = 0;
+
+    /*!
+     * Optional hook used by the modern (Qt Quick) frontend to present an available update itself instead of the
+     * widget-based UpdateAvailableDialog. `respond` must be called exactly once with one of the
+     * UpdateAvailableDialog::ResultCode values (Install = 10, DontInstall = 11, Skip = 12).
+     */
+    using OfferHook = std::function<void(const QString& versionName, const QString& releaseNotes, std::function<void(int)> respond)>;
+    static inline OfferHook s_offerHook;
 
    signals:
     /*!

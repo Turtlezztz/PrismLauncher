@@ -1,12 +1,21 @@
 #pragma once
 #include <java/JavaChecker.h>
 
+#include <functional>
+
 class QWidget;
 
 /**
  * Common UI bits for the java pages to use.
  */
 namespace JavaCommon {
+/**
+ * Optional hook used by the modern (Qt Quick) frontend: when set, the messages below are handed to it
+ * (kind: "success" | "warning" | "error", rich text) instead of being shown as widget message boxes.
+ */
+using MessageHook = std::function<void(const QString& kind, const QString& title, const QString& text)>;
+void setMessageHook(MessageHook hook);
+
 bool checkJVMArgs(QString args, QWidget* parent);
 
 // Show a dialog saying that the Java binary was usable
