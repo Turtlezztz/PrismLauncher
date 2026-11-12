@@ -164,7 +164,7 @@ Popup {
                     }
                     PComboBox {
                         id: sortBox
-                        Layout.preferredWidth: 150
+                        Layout.preferredWidth: 190
                         model: sm.sortOptions
                         textRole: "text"; valueRole: "value"
                         onActivated: { sm.sortIndex = currentValue; sm.search() }

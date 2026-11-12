@@ -929,7 +929,15 @@ void ResSearchModel::loadEntry(const ModPlatform::IndexedPack::Ptr& pack)
             auto versions = std::move(pack->versions);
             auto loaded = pack->versionsLoaded;
             auto type = pack->resourceType;
+            auto authors = pack->authors;
+            auto logo = pack->logoUrl;
             *pack = *response;
+            if (pack->authors.isEmpty()) {
+                pack->authors = authors;  // project endpoints don't always carry the author list
+            }
+            if (pack->logoUrl.isEmpty()) {
+                pack->logoUrl = logo;
+            }
             pack->versions = std::move(versions);
             pack->versionsLoaded = loaded;
             if (pack->resourceType == ModPlatform::ResourceType::Unknown) {

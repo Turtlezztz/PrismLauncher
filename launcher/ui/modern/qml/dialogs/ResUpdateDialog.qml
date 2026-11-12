@@ -8,6 +8,7 @@ import PrismModern
 Item {
     id: root
     property var folderModel: null
+    readonly property alias flow: flow
 
     function begin(fm, includeDeps, releaseTypes) {
         folderModel = fm
@@ -21,6 +22,7 @@ Item {
     }
 
     function handleStage() {
+        if (flow.stage !== "running") progress.close()
         switch (flow.stage) {
         case "askProvider":
             providerDlg.open(); break

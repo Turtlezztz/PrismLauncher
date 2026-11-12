@@ -22,6 +22,7 @@ Item {
     property alias leadingTools: leading.data
     readonly property alias model: fm
     readonly property alias browser: browser
+    readonly property alias updater: updater
     readonly property bool isMods: fm.isMods
     readonly property var info: _info
     property var _info: ({})

@@ -335,7 +335,7 @@ QVariantMap ResWorldModel::get(int row) const
     for (auto it = names.begin(); it != names.end(); ++it) {
         m[QString::fromUtf8(it.value())] = data(index(row, 0), it.key());
     }
-    m["lastPlayedFull"] = QLocale().toString(worldAt(row)->lastPlayed(), QLocale::LongFormat);
+    m["lastPlayedFull"] = QLocale().toString(worldAt(row)->lastPlayed(), QLocale::ShortFormat);
     return m;
 }
 
