@@ -38,6 +38,17 @@ NIPackBrowser::NIPackBrowser(QObject* parent) : QObject(parent), m_model(new NIP
     m_searchTimer.setSingleShot(true);
     m_searchTimer.setInterval(350);
     connect(&m_searchTimer, &QTimer::timeout, this, &NIPackBrowser::search);
+    // the selected pack's logo may arrive after it was selected
+    connect(m_model, &QAbstractItemModel::dataChanged, this, [this] {
+        if (m_selectedRow < 0 || m_selectedRow >= m_model->rowCount() || m_currentInfo.isEmpty()) {
+            return;
+        }
+        const auto logo = m_model->data(m_model->index(m_selectedRow, 0), NIPackListModel::LogoRole);
+        if (logo != m_currentInfo.value("logo")) {
+            m_currentInfo["logo"] = logo;
+            emit currentChanged();
+        }
+    });
 }
 
 NIPackBrowser::~NIPackBrowser() = default;
@@ -334,6 +345,21 @@ void NIPackBrowser::search()
         return;
     }
     if (m_modrinth || m_flame) {
+        // the classic models abort + restart in a way that drops "#id" lookups; wait for the running query instead
+        auto running = m_modrinth ? m_modrinth->activeSearchJob() : m_flame->activeSearchJob();
+        if (running) {
+            if (!m_searchQueued) {
+                m_searchQueued = true;
+                connect(
+                    running.get(), &Task::finished, this,
+                    [this] {
+                        m_searchQueued = false;
+                        search();
+                    },
+                    Qt::QueuedConnection);
+            }
+            return;
+        }
         clearSelection();
         const bool changed = m_filterChanged;
         m_filterChanged = false;

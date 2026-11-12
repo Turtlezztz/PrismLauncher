@@ -58,8 +58,6 @@ void NIFileTreeModel::toggle(const QModelIndex& index)
 {
     const auto state = static_cast<Qt::CheckState>(FileIgnoreProxy::data(index, Qt::CheckStateRole).toInt());
     setData(index, state == Qt::Checked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
-    // children/parents change state too: refresh everything visible
-    emit layoutChanged();
 }
 
 // ------------------------------------------------------------------- NIExportInstance

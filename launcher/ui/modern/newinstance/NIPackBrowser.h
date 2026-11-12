@@ -188,6 +188,7 @@ class NIPackBrowser : public QObject {
     QStringList m_sortOptions;
     int m_sortIndex = 0;
     QTimer m_searchTimer;
+    bool m_searchQueued = false;
     Task::Ptr m_watchedJob;
     bool m_listLoading = false;
     QString m_errorText;
