@@ -184,7 +184,7 @@ class NIPackBrowser : public QObject {
     bool m_active = false;
     bool m_initialized = false;
     NIPackListModel* m_model;
-    QString m_searchTerm;
+    QString m_searchTerm = QStringLiteral("");  // non-null: the classic models compare isNull() too
     QStringList m_sortOptions;
     int m_sortIndex = 0;
     QTimer m_searchTimer;

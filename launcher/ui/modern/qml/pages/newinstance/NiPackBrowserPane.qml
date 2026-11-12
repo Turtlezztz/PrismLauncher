@@ -57,7 +57,7 @@ Item {
                 implicitWidth: 190
                 model: b.sortOptions
                 currentIndex: b.sortIndex
-                displayText: qsTr("Sort: %1").arg(currentText)
+                displayText: qsTr("Sort: %1").arg(currentText.replace(/^Sort by /, ""))
                 onActivated: idx => b.sortIndex = idx
             }
             PButton {

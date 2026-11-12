@@ -20,8 +20,21 @@ void NIPackListModel::setSource(QAbstractItemModel* model)
     setSourceModel(model);
     if (model) {
         // logos arrive as DecorationRole-only changes; re-announce them for every role so QML delegates refresh
-        m_conn = connect(model, &QAbstractItemModel::dataChanged, this, [this](const QModelIndex& tl, const QModelIndex& br) {
-            emit dataChanged(mapFromSource(tl), mapFromSource(br), {});
+        // (some classic models only announce rows 0..1 when a logo arrives, so refresh every row, coalesced)
+        m_conn = connect(model, &QAbstractItemModel::dataChanged, this, [this] {
+            if (m_refreshQueued) {
+                return;
+            }
+            m_refreshQueued = true;
+            QMetaObject::invokeMethod(
+                this,
+                [this] {
+                    m_refreshQueued = false;
+                    if (rowCount() > 0) {
+                        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), {});
+                    }
+                },
+                Qt::QueuedConnection);
         });
     }
     emit countChanged();

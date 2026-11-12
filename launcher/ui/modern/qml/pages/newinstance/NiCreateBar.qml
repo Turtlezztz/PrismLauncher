@@ -104,6 +104,7 @@ Rectangle {
         }
         ColumnLayout {
             Layout.preferredWidth: 180
+            Layout.maximumWidth: 220
             spacing: 4
             Text { text: qsTr("Group"); color: Theme.textMuted; font.pixelSize: Theme.fontXs + 1; font.weight: Font.Medium }
             PComboBox {

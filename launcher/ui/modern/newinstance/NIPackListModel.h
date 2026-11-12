@@ -37,4 +37,5 @@ class NIPackListModel : public QIdentityProxyModel {
    private:
     ExtraFn m_extra;
     QMetaObject::Connection m_conn;
+    bool m_refreshQueued = false;
 };

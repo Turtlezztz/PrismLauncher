@@ -79,6 +79,7 @@ void NIPackBrowser::setActive(bool a)
     if (!m_initialized || (m_platform == "ftb" && m_ftb->wasAborted())) {
         m_initialized = true;
         if (m_platform == "modrinth" || m_platform == "curseforge" || m_platform == "technic") {
+            m_filterChanged = true;  // the classic models skip a "same as before" query, force the first one
             search();
         } else if (m_platform == "atlauncher") {
             m_atl->request();

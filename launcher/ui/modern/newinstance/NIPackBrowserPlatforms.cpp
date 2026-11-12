@@ -484,8 +484,11 @@ void NIPackBrowser::selectLegacy(int row)
     info["authorsHtml"] = m_legacyPack.author.toHtmlEscaped();
     info["mcVersion"] = m_legacyPack.mcVersion;
     QString mods = m_legacyPack.mods;
-    info["descriptionHtml"] =
-        cleanHtml(m_legacyPack.description + "<h4>" + tr("Mods") + "</h4><ul><li>" + mods.replace(";", "</li><li>") + "</li></ul>");
+    QString html = m_legacyPack.description;
+    if (!mods.trimmed().isEmpty()) {
+        html += "<h4>" + tr("Mods") + "</h4><ul><li>" + mods.replace(";", "</li><li>") + "</li></ul>";
+    }
+    info["descriptionHtml"] = cleanHtml(html);
     if (m_legacyPack.broken) {
         info["warning"] = tr("This pack is marked as broken and can't be installed.");
     }

@@ -28,14 +28,15 @@ Rectangle {
         NiPackLogo { size: 48; source: row.logo; name: row.name }
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 2
-            RowLayout {
+            spacing: 1
+            Text { text: row.name; color: row.selected ? Theme.accent : Theme.text; font.pixelSize: Theme.fontMd + 1; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: true }
+            Text { text: row.subtitle; visible: text.length > 0; color: Theme.textSubtle; font.pixelSize: Theme.fontXs + 1; elide: Text.ElideRight; Layout.fillWidth: true }
+            Text {
+                text: row.summary; visible: text.length > 0
+                color: Theme.textMuted; font.pixelSize: Theme.fontSm
+                wrapMode: Text.Wrap; maximumLineCount: row.subtitle.length ? 1 : 2; elide: Text.ElideRight
                 Layout.fillWidth: true
-                spacing: 6
-                Text { text: row.name; color: row.selected ? Theme.accent : Theme.text; font.pixelSize: Theme.fontMd + 1; font.weight: Font.DemiBold; elide: Text.ElideRight; Layout.fillWidth: subtitleText.text.length === 0; Layout.maximumWidth: implicitWidth }
-                Text { id: subtitleText; text: row.subtitle; visible: text.length > 0; color: Theme.textSubtle; font.pixelSize: Theme.fontSm; elide: Text.ElideRight; Layout.fillWidth: true }
             }
-            Text { text: row.summary; color: Theme.textMuted; font.pixelSize: Theme.fontSm; wrapMode: Text.Wrap; maximumLineCount: 2; elide: Text.ElideRight; Layout.fillWidth: true }
         }
     }
 }

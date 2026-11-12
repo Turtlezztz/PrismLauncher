@@ -21,7 +21,7 @@ Rectangle {
         visible: !root.hasSelection
         iconName: "package"
         title: qsTr("Pick a modpack")
-        text: qsTr("Select a modpack from the list to see its details and choose a version.")
+        text: qsTr("Select one to see details and versions.")
     }
 
     ColumnLayout {
