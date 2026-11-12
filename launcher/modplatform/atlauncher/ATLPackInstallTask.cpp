@@ -59,6 +59,7 @@
 
 #include "Application.h"
 #include "BuildConfig.h"
+#include "ModernInteraction.h"
 #include "ui/dialogs/BlockedModsDialog.h"
 
 namespace {
@@ -842,14 +843,19 @@ void PackInstallTask::downloadMods()
 
         qWarning() << "Blocked mods found, displaying mod list";
 
-        BlockedModsDialog messageDialog(nullptr, tr("Blocked mods found"),
-                                        tr("The following files are not available for download in third party launchers.<br/>"
-                                           "You will need to manually download them and add them to the instance."),
-                                        mods, "md5");
+        const auto title = tr("Blocked mods found");
+        const auto text = tr("The following files are not available for download in third party launchers.<br/>"
+                             "You will need to manually download them and add them to the instance.");
+        bool proceed = false;
+        if (ModernInteraction::active()) {
+            proceed = ModernInteraction::blockedMods(title, text, mods, "md5");
+        } else {
+            BlockedModsDialog messageDialog(nullptr, title, text, mods, "md5");
+            messageDialog.setModal(true);
+            proceed = messageDialog.exec() != 0;
+        }
 
-        messageDialog.setModal(true);
-
-        if (messageDialog.exec() != 0) {
+        if (proceed) {
             qDebug() << "Post dialog blocked mods list:" << mods;
             for (const auto& blocked : mods) {
                 if (!blocked.matched) {

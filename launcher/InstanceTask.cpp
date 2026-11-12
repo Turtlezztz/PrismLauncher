@@ -7,12 +7,23 @@
 #include "minecraft/MinecraftLoadAndCheck.h"
 #include "settings/SettingsObject.h"
 #include "tasks/SequentialTask.h"
+#include "ModernInteraction.h"
 #include "ui/dialogs/CustomMessageBox.h"
 
 #include <QPushButton>
 
 InstanceNameChange askForChangingInstanceName(QWidget* parent, const QString& oldName, const QString& newName)
 {
+    if (ModernInteraction::active()) {
+        ModernInteraction::Question q;
+        q.title = QObject::tr("Change instance name");
+        q.text = QObject::tr("The instance's name seems to include the old version. Would you like to update it?<br><br>"
+                             "Old name: %1<br>New name: %2")
+                     .arg(oldName.toHtmlEscaped(), newName.toHtmlEscaped());
+        q.buttons = { QObject::tr("Update name"), QObject::tr("Keep name") };
+        q.cancelIndex = 1;
+        return ModernInteraction::ask(q) == 0 ? InstanceNameChange::ShouldChange : InstanceNameChange::ShouldKeep;
+    }
     auto* dialog =
         CustomMessageBox::selectable(parent, QObject::tr("Change instance name"),
                                      QObject::tr("The instance's name seems to include the old version. Would you like to update it?\n\n"
@@ -32,6 +43,27 @@ ShouldUpdate askIfShouldUpdate(QWidget* parent, const QString& originalVersionNa
 {
     if (APPLICATION->settings()->get("SkipModpackUpdatePrompt").toBool()) {
         return ShouldUpdate::SkipUpdating;
+    }
+
+    if (ModernInteraction::active()) {
+        ModernInteraction::Question q;
+        q.title = QObject::tr("Similar modpack was found!");
+        q.text = QObject::tr(
+                     "One or more of your instances are from this same modpack%1. Do you want to create a "
+                     "separate instance, or update the existing one?<br><br><b>NOTE:</b> Make sure you made a backup of your important "
+                     "instance data before updating, as worlds can be corrupted and some configuration may be lost (due to pack overrides).")
+                     .arg(originalVersionName.toHtmlEscaped());
+        q.kind = "info";
+        q.buttons = { QObject::tr("Update existing instance"), QObject::tr("Create new instance"), QObject::tr("Cancel") };
+        q.cancelIndex = 2;
+        switch (ModernInteraction::ask(q)) {
+            case 0:
+                return ShouldUpdate::Update;
+            case 1:
+                return ShouldUpdate::SkipUpdating;
+            default:
+                return ShouldUpdate::Cancel;
+        }
     }
 
     auto* info = CustomMessageBox::selectable(
@@ -101,6 +133,16 @@ void InstanceTask::setOverride(bool override, const QString& instanceIdToOverrid
 
 ShouldDeleteSaves askIfShouldDeleteSaves(QWidget* parent)
 {
+    if (ModernInteraction::active()) {
+        ModernInteraction::Question q;
+        q.title = QObject::tr("Delete Existing Save Files");
+        q.text = QObject::tr("An earlier version of this mod pack installed save files.<br>"
+                             "Would you like to remove those existing saves as part of this update?");
+        q.kind = "warning";
+        q.buttons = { QObject::tr("Remove saves"), QObject::tr("Keep saves") };
+        q.cancelIndex = 1;
+        return ModernInteraction::ask(q) == 0 ? ShouldDeleteSaves::Yes : ShouldDeleteSaves::No;
+    }
     auto* dialog = CustomMessageBox::selectable(parent, QObject::tr("Delete Existing Save Files"),
                                                 QObject::tr("An earlier version of this mod pack installed save files.\n"
                                                             "Would you like to remove those existing saves as part of this update?"),
@@ -157,7 +199,9 @@ void InstanceTask::downloadFiles(MinecraftInstance* inst)
         if (!isRunning()) {
             return;
         }
-        if (!task->wasSuccessful()) {
+        if (!task->wasSuccessful() && ModernInteraction::active()) {
+            ModernInteraction::notify(tr("Error"), tr("Could not download game files: %1").arg(task->failReason()), "warning");
+        } else if (!task->wasSuccessful()) {
             CustomMessageBox::selectable(QApplication::activeWindow(), tr("Error"),
                                          tr("Could not download game files: %1").arg(task->failReason()), QMessageBox::Warning)
                 ->show();

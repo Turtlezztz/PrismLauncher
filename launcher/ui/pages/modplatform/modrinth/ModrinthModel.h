@@ -53,7 +53,7 @@ class ModpackListModel : public QAbstractListModel {
     Q_OBJECT
 
    public:
-    explicit ModpackListModel(ModrinthPage* parent);
+    explicit ModpackListModel(QObject* parent);
     ~ModpackListModel() override = default;
 
     auto rowCount(const QModelIndex& parent) const -> int override { return parent.isValid() ? 0 : static_cast<int>(m_modpacks.size()); };

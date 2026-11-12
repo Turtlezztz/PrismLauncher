@@ -51,6 +51,7 @@
 
 #include "Application.h"
 #include "BuildConfig.h"
+#include "ModernInteraction.h"
 #include "ui/dialogs/BlockedModsDialog.h"
 
 namespace FTB {
@@ -208,14 +209,19 @@ void PackInstallTask::onResolveModsSucceeded()
     if (anyBlocked) {
         qDebug() << "Blocked files found, displaying file list";
 
-        BlockedModsDialog messageDialog(m_parent, tr("Blocked files found"),
-                                        tr("The following files are not available for download in third party launchers.<br/>"
-                                           "You will need to manually download them and add them to the instance."),
-                                        m_blockedMods);
+        const auto title = tr("Blocked files found");
+        const auto text = tr("The following files are not available for download in third party launchers.<br/>"
+                             "You will need to manually download them and add them to the instance.");
+        bool proceed = false;
+        if (ModernInteraction::active()) {
+            proceed = ModernInteraction::blockedMods(title, text, m_blockedMods, "sha1");
+        } else {
+            BlockedModsDialog messageDialog(m_parent, title, text, m_blockedMods);
+            messageDialog.setModal(true);
+            proceed = messageDialog.exec() == QDialog::Accepted;
+        }
 
-        messageDialog.setModal(true);
-
-        if (messageDialog.exec() == QDialog::Accepted) {
+        if (proceed) {
             qDebug() << "Post dialog blocked mods list: " << m_blockedMods;
             createInstance();
         } else {

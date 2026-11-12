@@ -55,6 +55,7 @@
 #include "settings/INISettingsObject.h"
 
 #include "tasks/ConcurrentTask.h"
+#include "ModernInteraction.h"
 #include "ui/dialogs/BlockedModsDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
 
@@ -154,6 +155,14 @@ void FlameCreationTask::executeTask()
 
     auto warnUser = [this, createInst](const QString& title,
                                        const QString& text) {  // We don't have an old index file, so we may duplicate stuff!
+        if (ModernInteraction::active()) {
+            if (!ModernInteraction::confirm(title, text, "warning", tr("Continue"), tr("Cancel"))) {
+                emitAborted();
+                return;
+            }
+            createInst();
+            return;
+        }
         auto* dialog = CustomMessageBox::selectable(m_parent, title, text, QMessageBox::Warning, QMessageBox::Ok | QMessageBox::Cancel);
 
         if (dialog->exec() == QDialog::DialogCode::Rejected) {
@@ -368,6 +377,9 @@ bool FlameCreationTask::promptForUntrustedMods()
         return true;
     }
 
+    if (ModernInteraction::active()) {
+        return ModernInteraction::ask(ModernInteraction::untrustedModsQuestion(untrustedMods)) == 0;
+    }
     UntrustedModsDialog dialog{ untrustedMods, m_parent };
     return dialog.exec() == QDialog::Accepted;
 }
@@ -549,7 +561,15 @@ void FlameCreationTask::idResolverSucceeded()
         }
     }
 
-    if (!optionalFiles.empty()) {
+    if (!optionalFiles.empty() && ModernInteraction::active()) {
+        auto selected = ModernInteraction::checklist(tr("Select optional mods"),
+                                                     tr("This modpack has optional mods. Choose which ones to install."), optionalFiles, {});
+        if (!selected) {
+            emitAborted();
+            return;
+        }
+        m_selectedOptionalMods = *selected;
+    } else if (!optionalFiles.empty()) {
         OptionalModDialog optionalModDialog(m_parent, optionalFiles);
         if (optionalModDialog.exec() == QDialog::Rejected) {
             emitAborted();
@@ -589,14 +609,19 @@ void FlameCreationTask::idResolverSucceeded()
     if (anyBlocked) {
         qWarning() << "Blocked mods found, displaying mod list";
 
-        BlockedModsDialog messageDialog(m_parent, tr("Blocked mods found"),
-                                        tr("The following files are not available for download in third party launchers.<br/>"
-                                           "You will need to manually download them and add them to the instance."),
-                                        blockedMods);
+        const auto title = tr("Blocked mods found");
+        const auto text = tr("The following files are not available for download in third party launchers.<br/>"
+                             "You will need to manually download them and add them to the instance.");
+        bool proceed = false;
+        if (ModernInteraction::active()) {
+            proceed = ModernInteraction::blockedMods(title, text, blockedMods, "sha1");
+        } else {
+            BlockedModsDialog messageDialog(m_parent, title, text, blockedMods);
+            messageDialog.setModal(true);
+            proceed = messageDialog.exec() != 0;
+        }
 
-        messageDialog.setModal(true);
-
-        if (messageDialog.exec() != 0) {
+        if (proceed) {
             qDebug() << "Post dialog blocked mods list:" << blockedMods;
             copyBlockedMods(blockedMods);
             setupDownloadJob();

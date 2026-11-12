@@ -69,7 +69,7 @@ auto sortFromIndex(int index) -> QString
 }  // namespace
 namespace Modrinth {
 
-ModpackListModel::ModpackListModel(ModrinthPage* parent) : QAbstractListModel(parent), m_parent(parent) {}
+ModpackListModel::ModpackListModel(QObject* parent) : QAbstractListModel(parent), m_parent(qobject_cast<ModrinthPage*>(parent)) {}
 
 auto ModpackListModel::debugName() -> QString
 {
@@ -367,7 +367,7 @@ void ModpackListModel::searchRequestFailed(const QString& /*reason*/, int networ
         QMessageBox::critical(nullptr, tr("Error"),
                               //: %1 refers to the launcher itself
                               QString("%1 %2")
-                                  .arg(m_parent->displayName())
+                                  .arg(m_parent ? m_parent->displayName() : QString("Modrinth"))
                                   .arg(tr("API version too old!\nPlease update %1!").arg(BuildConfig.LAUNCHER_DISPLAYNAME)));
     }
     m_jobPtr.reset();
