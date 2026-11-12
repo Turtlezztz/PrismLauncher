@@ -82,6 +82,7 @@ Rectangle {
             }
         }
 
+        AccountSwitcher { collapsed: root.collapsed }
         SidebarItem { iconName: "folder"; text: qsTr("Folders"); collapsed: root.collapsed; onClicked: foldersMenu.popup(this, width + 6, 0) }
         SidebarItem { iconName: "info"; text: qsTr("Help & About"); collapsed: root.collapsed; onClicked: helpMenu.popup(this, width + 6, 0) }
         SidebarItem {

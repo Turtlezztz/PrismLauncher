@@ -39,6 +39,23 @@
 
 #include <QRegularExpression>
 
+static JavaCommon::MessageHook s_messageHook;
+
+void JavaCommon::setMessageHook(MessageHook hook)
+{
+    s_messageHook = std::move(hook);
+}
+
+// returns true when the modern frontend handled the message
+static bool hookMessage(const QString& kind, const QString& title, const QString& text)
+{
+    if (!s_messageHook) {
+        return false;
+    }
+    s_messageHook(kind, title, text);
+    return true;
+}
+
 bool JavaCommon::checkJVMArgs(QString jvmargs, QWidget* parent)
 {
     static const QRegularExpression s_memRegex("-Xm[sx]");
@@ -50,7 +67,9 @@ bool JavaCommon::checkJVMArgs(QString jvmargs, QWidget* parent)
             "or \"-Xms\").\n"
             "There are dedicated boxes for these in the settings (Java tab, in the Memory group at the top).\n"
             "This message will be displayed until you remove them from the JVM arguments.");
-        CustomMessageBox::selectable(parent, QObject::tr("JVM arguments warning"), warnStr, QMessageBox::Warning)->exec();
+        if (!hookMessage("warning", QObject::tr("JVM arguments warning"), warnStr.toHtmlEscaped().replace('\n', "<br />"))) {
+            CustomMessageBox::selectable(parent, QObject::tr("JVM arguments warning"), warnStr, QMessageBox::Warning)->exec();
+        }
         return false;
     }
     // block lunacy with passing required version to the JVM
@@ -59,7 +78,9 @@ bool JavaCommon::checkJVMArgs(QString jvmargs, QWidget* parent)
             "You tried to pass required Java version argument to the JVM (using \"-version:xxx\"). This is not safe and will not be "
             "allowed.\n"
             "This message will be displayed until you remove this from the JVM arguments.");
-        CustomMessageBox::selectable(parent, QObject::tr("JVM arguments warning"), warnStr, QMessageBox::Warning)->exec();
+        if (!hookMessage("warning", QObject::tr("JVM arguments warning"), warnStr.toHtmlEscaped().replace('\n', "<br />"))) {
+            CustomMessageBox::selectable(parent, QObject::tr("JVM arguments warning"), warnStr, QMessageBox::Warning)->exec();
+        }
         return false;
     }
     return true;
@@ -78,6 +99,9 @@ void JavaCommon::javaWasOk(QWidget* parent, const JavaChecker::Result& result)
         htmlError.replace('\n', "<br />");
         text += QObject::tr("<br />Warnings:<br /><font color=\"orange\">%1</font>").arg(htmlError);
     }
+    if (hookMessage("success", QObject::tr("Java test success"), text)) {
+        return;
+    }
     CustomMessageBox::selectable(parent, QObject::tr("Java test success"), text, QMessageBox::Information)->show();
 }
 
@@ -88,6 +112,9 @@ void JavaCommon::javaArgsWereBad(QWidget* parent, const JavaChecker::Result& res
     htmlError.replace('\n', "<br />");
     text += QObject::tr("The specified Java binary didn't work with the arguments you provided:<br />");
     text += QString("<font color=\"red\">%1</font>").arg(htmlError);
+    if (hookMessage("error", QObject::tr("Java test failure"), text)) {
+        return;
+    }
     CustomMessageBox::selectable(parent, QObject::tr("Java test failure"), text, QMessageBox::Warning)->show();
 }
 
@@ -97,6 +124,9 @@ void JavaCommon::javaBinaryWasBad(QWidget* parent, const JavaChecker::Result& re
     text += QObject::tr(
         "The specified Java binary didn't work.<br />You should press 'Detect', "
         "or set the path to the Java executable.<br />");
+    if (hookMessage("error", QObject::tr("Java test failure"), text)) {
+        return;
+    }
     CustomMessageBox::selectable(parent, QObject::tr("Java test failure"), text, QMessageBox::Warning)->show();
 }
 
@@ -104,6 +134,9 @@ void JavaCommon::javaCheckNotFound(QWidget* parent)
 {
     QString text;
     text += QObject::tr("Java checker library could not be found. Please check your installation.");
+    if (hookMessage("error", QObject::tr("Java test failure"), text)) {
+        return;
+    }
     CustomMessageBox::selectable(parent, QObject::tr("Java test failure"), text, QMessageBox::Warning)->show();
 }
 

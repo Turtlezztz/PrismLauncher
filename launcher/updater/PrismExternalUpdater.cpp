@@ -325,22 +325,27 @@ void PrismExternalUpdater::offerUpdate(const QString& versionName,
         return;
     }
 
-    UpdateAvailableDialog dlg(BuildConfig.printableVersionString(), versionName, releaseNotes);
-
-    auto result = dlg.exec();
-    qDebug() << "offer dlg result" << result;
-
-    priv->settings->beginGroup("skip");
-    if (result == UpdateAvailableDialog::Skip) {
-        priv->settings->setValue(versionTag, true);
-    } else {
-        if (result == UpdateAvailableDialog::Install) {
-            performUpdate(versionTag);
+    auto handleResult = [this, versionTag](int result) {
+        qDebug() << "offer dlg result" << result;
+        priv->settings->beginGroup("skip");
+        if (result == UpdateAvailableDialog::Skip) {
+            priv->settings->setValue(versionTag, true);
+        } else {
+            if (result == UpdateAvailableDialog::Install) {
+                performUpdate(versionTag);
+            }
+            priv->settings->remove(versionTag);
         }
-        priv->settings->remove(versionTag);
+        priv->settings->endGroup();
+        priv->settings->sync();
+    };
+    if (s_offerHook) {
+        s_offerHook(versionName, releaseNotes, handleResult);
+        return;
     }
-    priv->settings->endGroup();
-    priv->settings->sync();
+
+    UpdateAvailableDialog dlg(BuildConfig.printableVersionString(), versionName, releaseNotes);
+    handleResult(dlg.exec());
 }
 
 void PrismExternalUpdater::performUpdate(const QString& versionTag) const
