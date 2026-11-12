@@ -37,6 +37,15 @@ qt_add_qml_module(Launcher_modern
 )
 
 target_include_directories(Launcher_modern PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# the generated QML type registration includes headers by file name only, so every bridge sub-directory
+# (instance/, newinstance/, ...) has to be on the include path
+set(MODERN_BRIDGE_DIRS "")
+foreach(src ${MODERN_CPP})
+    get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR}/${src} DIRECTORY)
+    list(APPEND MODERN_BRIDGE_DIRS ${dir})
+endforeach()
+list(REMOVE_DUPLICATES MODERN_BRIDGE_DIRS)
+target_include_directories(Launcher_modern PRIVATE ${MODERN_BRIDGE_DIRS})
 target_link_libraries(Launcher_modern PUBLIC
     Launcher_logic
     Qt6::Qml

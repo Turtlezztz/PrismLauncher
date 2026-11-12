@@ -10,7 +10,7 @@
 #include "modplatform/ModIndex.h"
 #include "tasks/Task.h"
 
-class TaskBridge;
+#include "TaskBridge.h"
 
 /**
  * "Import" source (classic ImportPage) + handling of dropped / opened URLs (classic MainWindow::processURLs).

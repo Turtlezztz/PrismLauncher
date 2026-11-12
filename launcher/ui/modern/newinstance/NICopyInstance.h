@@ -5,7 +5,7 @@
 
 #include "InstanceCopyPrefs.h"
 
-class TaskBridge;
+#include "TaskBridge.h"
 
 /**
  * Backend of CopyInstanceDialog.qml (classic CopyInstanceDialog): copy options + filesystem capabilities, and the copy task.

@@ -48,6 +48,11 @@ bool NIController::templateAvailable() const
     return !dir.isEmpty() && QDir(dir).exists();
 }
 
+bool NIController::flameSupported() const
+{
+    return APPLICATION->capabilities() & Application::SupportsFlame;
+}
+
 void NIController::refreshInstanceDirs()
 {
     m_dirs.clear();

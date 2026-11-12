@@ -6,7 +6,7 @@
 #include <memory>
 
 class InstanceTask;
-class TaskBridge;
+#include "TaskBridge.h"
 
 /**
  * State shared by all "new instance" sources (the QML twin of classic NewInstanceDialog):
@@ -27,6 +27,8 @@ class NIController : public QObject {
     Q_PROPERTY(QString lastDir READ lastDir CONSTANT)
     Q_PROPERTY(QString lastGroup READ lastGroup CONSTANT)
     Q_PROPERTY(bool templateAvailable READ templateAvailable CONSTANT)
+    /// CurseForge needs an API key (APPLICATION->capabilities())
+    Q_PROPERTY(bool flameSupported READ flameSupported CONSTANT)
 
    public:
     explicit NIController(QObject* parent = nullptr);
@@ -42,6 +44,7 @@ class NIController : public QObject {
     QString lastDir() const;
     QString lastGroup() const;
     bool templateAvailable() const;
+    bool flameSupported() const;
 
     /// takes ownership of task (may be null to clear)
     void setSuggestedPack(const QString& name = {}, const QString& version = {}, InstanceTask* task = nullptr);

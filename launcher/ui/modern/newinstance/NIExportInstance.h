@@ -7,7 +7,7 @@
 
 #include "FileIgnoreProxy.h"
 
-class TaskBridge;
+#include "TaskBridge.h"
 class QFileSystemModel;
 class MinecraftInstance;
 

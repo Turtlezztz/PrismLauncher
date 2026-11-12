@@ -31,6 +31,9 @@ class NIInteraction : public QObject {
     QVariant request(const QString& kind, const QVariantMap& data);
 
     Q_INVOKABLE void respond(int id, const QVariant& result);
+    /// Show a running TaskBridge in the global progress dialog (survives page changes).
+    /// opts: { successText, openInstance: bool, failTitle }
+    Q_INVOKABLE void track(QObject* task, const QVariantMap& opts = {}) { emit trackRequested(task, opts); }
 
     /// ATLauncher user interaction support (owned by the install task)
     static ATLauncher::UserInteractionSupport* makeAtlSupport();
@@ -38,6 +41,7 @@ class NIInteraction : public QObject {
    signals:
     void requested(int id, const QString& kind, const QVariantMap& data);
     void notified(const QString& title, const QString& text, const QString& kind);
+    void trackRequested(QObject* task, const QVariantMap& opts);
 
    private:
     explicit NIInteraction(QObject* parent = nullptr);
