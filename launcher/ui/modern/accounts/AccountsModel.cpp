@@ -83,7 +83,7 @@ QHash<int, QByteArray> AccountsModel::roleNames() const
     return {
         { AccountIdRole, "accountId" },   { NameRole, "name" },
         { TypeKeyRole, "typeKey" },       { TypeTextRole, "typeText" },
-        { StateRole, "state" },           { StatusTextRole, "statusText" },
+        { StateRole, "accountState" },           { StatusTextRole, "statusText" },
         { IsDefaultRole, "isDefault" },   { BusyRole, "busy" },
         { FaceUrlRole, "faceUrl" },       { HasProfileRole, "hasProfile" },
         { OwnsMinecraftRole, "ownsMinecraft" }, { LastErrorRole, "lastError" },
