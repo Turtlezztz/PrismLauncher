@@ -14,7 +14,11 @@ SetPageBase {
     readonly property int minMem: store ? store.getInt("MinMemAlloc") : 512
     readonly property int maxMem: store ? store.getInt("MaxMemAlloc") : 1024
 
-    Component.onCompleted: { SettingsBackend.refreshManagedJavas() }
+    Component.onCompleted: {
+        SettingsBackend.refreshManagedJavas()
+        if (SettingsBackend.debugPage === "java-install") openInstaller()
+        else if (SettingsBackend.debugPage === "java-pick") pickJava(0, function() {})
+    }
 
     Connections {
         target: SettingsBackend

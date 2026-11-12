@@ -34,7 +34,7 @@ Item {
         var k = String(id || "").toLowerCase().replace(/-settings$/, "")
         var map = { "apis": "api", "external-tools": "tools", "global": "launcher", "custom-commands": "commands", "environment-variables": "commands",
                     "commands": "commands", "minecraft": "minecraft", "appearance": "appearance", "language": "language", "java": "java",
-                    "launcher": "launcher", "proxy": "proxy", "accounts": "accounts", "api": "api", "tools": "tools", "general": "launcher" }
+                    "launcher": "launcher", "java-install": "java", "java-pick": "java", "proxy": "proxy", "accounts": "accounts", "api": "api", "tools": "tools", "general": "launcher" }
         return map[k] || "launcher"
     }
     function go(key) {
@@ -46,12 +46,20 @@ Item {
     function pageItem(key) { var l = loaders.itemAt(indexOfKey(key)); return l ? l.item : null }
 
     SetStore { id: store }
+    Timer { id: debugScroll; property int y: 0; property string key; interval: 400; onTriggered: { var p = page.pageItem(key); if (p) p.contentY = y } }
 
     Component.onCompleted: {
         Router.section = "Settings"
         SettingsBackend.notifyAboutToOpen()
         if (initialPage.length) go(keyFor(initialPage))
-        else if (SettingsBackend.debugPage.length) go(keyFor(SettingsBackend.debugPage))
+        else if (SettingsBackend.debugPage.length) {
+            // debug (screenshots): "<page>[@scrollY]" or "search:<text>"
+            var d = SettingsBackend.debugPage
+            if (d.indexOf("search:") === 0) { search.text = d.substring(7); return }
+            var parts = d.split("@")
+            go(keyFor(parts[0]))
+            if (parts.length > 1) { debugScroll.y = parseInt(parts[1]); debugScroll.key = keyFor(parts[0]); debugScroll.start() }
+        }
     }
     Component.onDestruction: if (store.dirty) { store.save(); Toasts.success(qsTr("Settings saved")) }
 
