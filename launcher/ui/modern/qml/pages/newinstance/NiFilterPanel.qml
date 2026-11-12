@@ -8,6 +8,7 @@ Rectangle {
     id: panel
     property NIPackBrowser browser: null
     readonly property bool modrinth: browser && browser.platform === "modrinth"
+    signal closeRequested()
 
     // working copy of the filter
     property var mcVersions: []
@@ -74,6 +75,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Text { text: qsTr("Filters"); color: Theme.text; font.pixelSize: Theme.fontLg; font.weight: Font.DemiBold; Layout.fillWidth: true }
                 PButton { size: "sm"; variant: "ghost"; text: qsTr("Reset"); enabled: panel.browser && panel.browser.activeFilterCount > 0; onClicked: panel.reset() }
+                IconButton { iconName: "x"; size: 26; iconSize: 14; tip: qsTr("Close filters"); onClicked: panel.closeRequested() }
             }
 
             // Minecraft versions

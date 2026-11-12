@@ -117,18 +117,19 @@ Item {
             Layout.fillHeight: true
             spacing: Theme.spacing
 
-            NiFilterPanel {
-                id: filterPanel
-                browser: b
-                visible: b.supportsFilters && pane.showFilters
+            // grid mode: filters are a side column; list mode: they slide over the results list (see listRect)
+            Item {
+                id: filterSlot
+                visible: pane.gridMode && b.supportsFilters && pane.showFilters
                 Layout.preferredWidth: 240
                 Layout.fillHeight: true
             }
 
             // list layout (NewInstancePage)
             Rectangle {
+                id: listRect
                 visible: !pane.gridMode
-                Layout.preferredWidth: pane.gridMode ? 0 : Math.max(300, (pane.width - (filterPanel.visible ? 252 : 0)) * 0.44)
+                Layout.preferredWidth: pane.gridMode ? 0 : Math.max(300, pane.width * 0.44)
                 Layout.fillHeight: true
                 radius: Theme.radiusLg
                 color: Theme.surface
@@ -204,5 +205,17 @@ Item {
                 Layout.fillHeight: true
             }
         }
+    }
+
+    NiFilterPanel {
+        id: filterPanel
+        browser: b
+        parent: pane.gridMode ? filterSlot : listRect
+        anchors.fill: parent
+        z: 5
+        onCloseRequested: pane.showFilters = false
+        visible: b.supportsFilters && pane.showFilters
+        opacity: visible ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: Theme.durFast } }
     }
 }
