@@ -37,6 +37,17 @@ qt_add_qml_module(Launcher_modern
 )
 
 target_include_directories(Launcher_modern PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# per-feature subfolders (instance/, settings/, ...) must be include roots too: the generated QML type
+# registrations include every QML_ELEMENT header by its bare file name
+set(MODERN_SUBDIRS "")
+foreach(_src ${MODERN_CPP})
+    get_filename_component(_dir ${_src} DIRECTORY)
+    if(_dir)
+        list(APPEND MODERN_SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_dir})
+    endif()
+endforeach()
+list(REMOVE_DUPLICATES MODERN_SUBDIRS)
+target_include_directories(Launcher_modern PRIVATE ${MODERN_SUBDIRS})
 target_link_libraries(Launcher_modern PUBLIC
     Launcher_logic
     Qt6::Qml

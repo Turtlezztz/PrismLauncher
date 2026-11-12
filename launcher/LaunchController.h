@@ -41,6 +41,7 @@
 #include "minecraft/launch/MinecraftTarget.h"
 
 class InstanceWindow;
+class LaunchInteraction;
 
 enum class LaunchDecision { Undecided, Continue, Abort };
 
@@ -71,6 +72,10 @@ class LaunchController : public Task {
     QString id() const { return m_instance->id(); }
 
     bool abort() override;
+
+    /// Install a non-widget implementation of the launch dialogs (used by the modern UI). nullptr restores the widget dialogs.
+    static void setInteraction(LaunchInteraction* interaction);
+    static LaunchInteraction* interaction();
 
    private:
     void login();

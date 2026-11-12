@@ -2,14 +2,22 @@ import QtQuick
 import QtQuick.Layouts
 import PrismModern
 
-// STUB — to be implemented (see ui/modern/README.md for ownership).
+// The launcher's own logs (classic ViewLogWindow): live log + older log files.
 PageScaffold {
     id: page
-    title: "LauncherLog"
+    title: qsTr("Launcher log")
+    subtitle: qsTr("What the launcher itself has been doing. Useful when reporting problems.")
     property string instanceId: ""
     property string initialTab: ""
     property string initialPage: ""
     property var importUrls: []
     function openTab(key) {}
-    EmptyState { Layout.alignment: Qt.AlignCenter; iconName: "hammer"; title: qsTr("Coming soon"); text: qsTr("This page is not implemented yet.") }
+
+    LogFilesView {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.bottomMargin: Theme.spacingXl
+        mode: "launcher"
+        uploadName: qsTr("Launcher Log")
+    }
 }
