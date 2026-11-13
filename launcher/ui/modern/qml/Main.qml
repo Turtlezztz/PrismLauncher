@@ -17,6 +17,9 @@ ApplicationWindow {
     // macOS: content extends under a transparent title bar (traffic lights float over the sidebar)
     readonly property bool macChrome: Qt.platform.os === "osx"
     flags: macChrome ? (Qt.Window | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint) : Qt.Window
+    // Qt >= 6.9 pads the content by the safe area (= the title bar) by default. We handle the inset
+    // ourselves so the sidebar can run under the traffic lights and the top strip can drag the window.
+    topPadding: 0; leftPadding: 0; rightPadding: 0; bottomPadding: 0
     readonly property int titleBarHeight: macChrome ? Math.max(28, Math.round(safeProbe.topInset)) : 0
     Item { id: safeProbe; anchors.fill: parent; readonly property real topInset: SafeArea.margins.top }
     font.family: Theme.fontFamily

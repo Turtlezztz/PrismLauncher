@@ -31,7 +31,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: Theme.spacing
                 IconButton { visible: page.showBack; iconName: "arrow-left"; tip: qsTr("Back"); onClicked: Router.back() }
-                Row { id: leading; spacing: Theme.spacing; Layout.alignment: Qt.AlignVCenter }
+                Row { id: leading; spacing: Theme.spacing; Layout.alignment: Qt.AlignVCenter; visible: children.length > 0 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2

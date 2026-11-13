@@ -7,7 +7,8 @@ Rectangle {
     id: root
     property bool collapsed: width < 120
     property int topInset: 0   // height of the integrated macOS title bar (traffic lights)
-    implicitWidth: App.setting("ModernSidebarCollapsed") === true ? 68 : 224
+    readonly property bool storedCollapsed: { var v = App.setting("ModernSidebarCollapsed"); return v === true || v === "true" }
+    implicitWidth: storedCollapsed ? 68 : 224
     color: Theme.sidebar
     Behavior on implicitWidth { NumberAnimation { duration: Theme.dur; easing.type: Theme.easing } }
 
