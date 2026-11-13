@@ -187,14 +187,19 @@ PageScaffold {
         }
     }
 
-    EmptyState {
-        Layout.alignment: Qt.AlignCenter
+    Item {
+        // a filling wrapper: EmptyState itself has a maximum height, which would push the header down
+        Layout.fillWidth: true
         Layout.fillHeight: true
         visible: Accounts.count === 0
-        iconName: "users"
-        title: qsTr("Welcome!")
-        text: qsTr("Link your Microsoft account to play Minecraft. You can add offline accounts once a Microsoft account that owns the game is added.")
-        PButton { visible: Accounts.msaSupported; text: qsTr("Add Microsoft account"); variant: "primary"; iconName: "log-in"; onClicked: page.openDialog("AccMsaLoginDialog") }
+        EmptyState {
+            anchors.centerIn: parent
+            width: Math.min(parent.width, 420)
+            iconName: "users"
+            title: qsTr("Welcome!")
+            text: qsTr("Link your Microsoft account to play Minecraft. You can add offline accounts once a Microsoft account that owns the game is added.")
+            PButton { visible: Accounts.msaSupported; text: qsTr("Add Microsoft account"); variant: "primary"; iconName: "log-in"; onClicked: page.openDialog("AccMsaLoginDialog") }
+        }
     }
 
     PMenu {

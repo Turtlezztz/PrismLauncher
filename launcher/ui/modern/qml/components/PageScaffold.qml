@@ -25,6 +25,7 @@ Item {
             Layout.leftMargin: page.contentMargins
             Layout.rightMargin: page.contentMargins
             Layout.topMargin: Theme.spacingXl
+            Layout.fillHeight: false   // nested layouts default to fillHeight; the header must never grow
             spacing: Theme.spacingLg
 
             RowLayout {
@@ -40,7 +41,7 @@ Item {
                 }
                 Row { id: actions; spacing: Theme.spacingSm; Layout.alignment: Qt.AlignVCenter }
             }
-            ColumnLayout { id: extra; Layout.fillWidth: true; spacing: Theme.spacing; visible: children.length > 0 }
+            ColumnLayout { id: extra; Layout.fillWidth: true; Layout.fillHeight: false; spacing: Theme.spacing; visible: implicitHeight > 0 }
         }
 
         ColumnLayout {
